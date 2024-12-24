@@ -23,7 +23,7 @@ const createContact = asyncHandler(async(req,res) => {
         throw new Error("All fields are mandatory");
     }
     const contact = await Contact.create({
-        user_id: req.user.id, // Add user_id
+        user_id: req.user.id, // Add user_id 
         name,
         email,
         phone,
@@ -54,6 +54,11 @@ const updateContact =asyncHandler (async (req,res) => {
         res.status(404);
         throw new Error("Contact not found");
     }
+
+    if(contact.user_id.toString() !== req.user.id){
+        req.status(403);
+        throw new Error("User cannot edit other users' contacts");
+    }
     const updatedContact = await Contact.findByIdAndUpdate(
         req.params.id,
         req.body,
@@ -75,7 +80,10 @@ const deleteContact = asyncHandler(async (req, res) => {
             res.status(404);
             throw new Error("Contact not found");
         }
-
+        if(contact.user_id.toString() !== req.user.id){
+            req.status(403);
+            throw new Error("User cannot delete other users' contacts");
+        }
         // Remove the contact using deleteOne (preferred in modern Mongoose versions)
         await Contact.deleteOne({ _id: req.params.id });
 
